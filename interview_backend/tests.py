@@ -10,10 +10,11 @@ class UserTestCase(GraphQLTestCase):
     def test_create_company(self):
         resp = self.query('''
             mutation {
-                createCompany(name: "cp1") {}
+                createCompany(name: "cp1") { ok }
             }
             ''')
-        print(resp.content)
         self.assertResponseNoErrors(resp)
         resp = self.query('{ companies { id } }')
         self.assertResponseNoErrors(resp)
+        content = json.loads(resp.content)
+        self.assertDictEqual(content, {'data': {'companies': [{'id': '1'}]}})
