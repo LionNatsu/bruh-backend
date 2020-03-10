@@ -67,28 +67,32 @@ class CreateProblem(graphene.Mutation):
 
 class StartInterview(graphene.Mutation):
     class Arguments:
-        id = graphene.ID()
+        company_id = graphene.ID()
 
     id = graphene.ID()
 
     @transaction.atomic
-    def mutate(self, info, id=None):
-        # company = Company.objects.get(id=id)
-        # # FIXME: performance issue. use Redis cache
+    def mutate(self, info, company_id=None):
+        # FIXME: performance issue. use Redis cache
+        # company = Company.objects.get(id=company_id)
         # print(company)
         # problems = ProblemSet.objects.get(company=company)
         # problems = random.choices(problems, k=company.problems_per_interview)
         # duration_total = functools.reduce(
         #     lambda x, y: x.problem.duration + y.problem.duration, problems
         # )
+        if company_id is not None:
+            raise NotImplementedError
+
+        user = info.context.user
+
         problems = Problem.objects.all()
         problems = random.choices(problems, k=3)
         duration_total = functools.reduce(
             lambda x, y: x + y.duration, problems, datetime.timedelta()
         )
-        print(duration_total, timezone.now(), timezone.now() + duration_total)
         interview = Interview(
-            user=info.context.user,
+            user=user,
             company=None,
             expired_time=timezone.now() + duration_total
         )
