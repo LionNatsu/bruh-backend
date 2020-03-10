@@ -1,7 +1,9 @@
 import graphene
+from django.core.exceptions import PermissionDenied
 from graphene_django import DjangoObjectType
 
-from .models import Company, User, Problem
+from django.contrib.auth.models import User
+from .models import Company, Problem
 
 
 class CompanyType(DjangoObjectType):
@@ -26,21 +28,11 @@ class CreateCompany(graphene.Mutation):
     company = graphene.Field(CompanyType)
 
     def mutate(self, info, name):
+        if not info.context.user.is_staff:
+            raise PermissionDenied()
         company = Company(name=name)
         company.save()
         return CreateCompany(company=company)
-
-
-class CreateUser(graphene.Mutation):
-    class Arguments:
-        name = graphene.String(required=True)
-
-    user = graphene.Field(UserType)
-
-    def mutate(self, info, name):
-        user = User(name=name)
-        user.save()
-        return CreateUser(user=user)
 
 
 class CreateProblem(graphene.Mutation):
@@ -52,6 +44,8 @@ class CreateProblem(graphene.Mutation):
     problem = graphene.Field(ProblemType)
 
     def mutate(self, info, title, text, code_template):
+        if not info.context.user.is_staff:
+            raise PermissionDenied()
         problem = Problem.objects.get_or_create(title=title)[0]
         problem.text = text
         problem.code_template = code_template
@@ -60,23 +54,30 @@ class CreateProblem(graphene.Mutation):
 
 
 class Query(graphene.ObjectType):
-    companies = graphene.List(CompanyType)
-    users = graphene.List(UserType)
-    problems = graphene.List(ProblemType)
+    current_user = graphene.Field(UserType)
+    all_users = graphene.List(UserType)
+    all_companies = graphene.List(CompanyType)
+    all_problems = graphene.List(ProblemType)
 
-    def resolve_companies(self, info, **kwargs):
-        return Company.objects.all()
+    def resolve_current_user(self, info, **kwargs):
+        return info.context.user
 
-    def resolve_users(self, info, **kwargs):
+    def resolve_all_users(self, info, **kwargs):
+        if not info.context.user.is_staff:
+            raise PermissionDenied
         return User.objects.all()
 
-    def resolve_problems(self, info, **kwargs):
+    def resolve_all_companies(self, info, **kwargs):
+        return Company.objects.all()
+
+    def resolve_all_problems(self, info, **kwargs):
+        if not info.context.user.is_staff:
+            raise PermissionDenied
         return Problem.objects.all()
 
 
 class Mutation(graphene.ObjectType):
     create_company = CreateCompany.Field()
-    create_user = CreateUser.Field()
     create_problem = CreateProblem.Field()
 
 

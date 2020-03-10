@@ -1,0 +1,12 @@
+<form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+  <div>
+    {{ form.username.label_tag }} {{ form.username }}
+  </div>
+  <div>
+    {{ form.password.label_tag }} {{ form.password }}
+    <input type="hidden" name="next" value="{{ next }}">
+  </div>
+  <div>
+    <input type="submit" value="Log in">
+  </div>
+</form>

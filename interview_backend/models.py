@@ -1,10 +1,7 @@
+from datetime import timedelta
+
 from django.db import models
-
-
-class User(models.Model):
-    name = models.CharField(max_length=64, unique=True)
-    current_interview = models.ForeignKey(
-        'Interview', null=True, on_delete=models.SET_NULL, related_name='+')
+from django.contrib.auth.models import User
 
 
 class Company(models.Model):
@@ -15,13 +12,16 @@ class Problem(models.Model):
     title = models.CharField(max_length=256)
     text = models.TextField()
     code_template = models.TextField()
+    duration = models.DurationField(default=timedelta(minutes=30))
 
 
 class Interview(models.Model):
-    user = models.ForeignKey('User', null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     company = models.ForeignKey('Company', null=True,
                                 on_delete=models.SET_NULL)
-    finished = models.BooleanField()
+    start_time = models.DateTimeField(auto_now_add=True)
+    expired_time = models.DateTimeField(null=False)
+    finished_time = models.DateTimeField(null=True)
 
 
 class TestCase(models.Model):
