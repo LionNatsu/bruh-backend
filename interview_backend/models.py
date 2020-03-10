@@ -1,11 +1,15 @@
 from datetime import timedelta
 
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 
 
 class Company(models.Model):
     name = models.CharField(max_length=64, unique=True)
+    problems_per_interview = models.IntegerField(
+        default=3,
+        validators=[MinValueValidator(1)])
 
 
 class Problem(models.Model):

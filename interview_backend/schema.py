@@ -1,9 +1,16 @@
-import graphene
+import datetime
+import functools
+import random
 from django.core.exceptions import PermissionDenied
+from django.utils import timezone
+
+import graphene
 from graphene_django import DjangoObjectType
 
+from django.db import transaction
 from django.contrib.auth.models import User
 from .models import Company, Problem
+from .models import Interview, Task, Submission, TestCase, ProblemSet
 
 
 class CompanyType(DjangoObjectType):
@@ -19,6 +26,11 @@ class UserType(DjangoObjectType):
 class ProblemType(DjangoObjectType):
     class Meta:
         model = Problem
+
+
+class InterviewType(DjangoObjectType):
+    class Meta:
+        model = Interview
 
 
 class CreateCompany(graphene.Mutation):
@@ -53,6 +65,41 @@ class CreateProblem(graphene.Mutation):
         return CreateProblem(problem=problem)
 
 
+class StartInterview(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID()
+
+    id = graphene.ID()
+
+    @transaction.atomic
+    def mutate(self, info, id=None):
+        # company = Company.objects.get(id=id)
+        # # FIXME: performance issue. use Redis cache
+        # print(company)
+        # problems = ProblemSet.objects.get(company=company)
+        # problems = random.choices(problems, k=company.problems_per_interview)
+        # duration_total = functools.reduce(
+        #     lambda x, y: x.problem.duration + y.problem.duration, problems
+        # )
+        problems = Problem.objects.all()
+        problems = random.choices(problems, k=3)
+        duration_total = functools.reduce(
+            lambda x, y: x + y.duration, problems, datetime.timedelta()
+        )
+        print(duration_total, timezone.now(), timezone.now() + duration_total)
+        interview = Interview(
+            user=info.context.user,
+            company=None,
+            expired_time=timezone.now() + duration_total
+        )
+        interview.save()
+        for problem in problems:
+            task = Task(problem=problem, interview=interview)
+            task.save()
+
+        return StartInterview(id=interview.id)
+
+
 class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
     all_users = graphene.List(UserType)
@@ -79,6 +126,8 @@ class Query(graphene.ObjectType):
 class Mutation(graphene.ObjectType):
     create_company = CreateCompany.Field()
     create_problem = CreateProblem.Field()
+    # assign_problem = AssignProblem.Field()
+    start_interview = StartInterview.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
