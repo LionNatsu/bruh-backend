@@ -88,6 +88,23 @@ DATABASES = {
     }
 }
 
+# Cache
+# https://docs.djangoproject.com/en/3.0/ref/settings/#std:setting-CACHES
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    },
+    'current_interviews': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'current_interviews',
+    },
+    'submission_results': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'submission_results',
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

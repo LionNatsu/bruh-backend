@@ -1,6 +1,8 @@
 import datetime
 import functools
 import random
+
+from django.core.cache import caches
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 
@@ -11,6 +13,9 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from .models import Company, Problem
 from .models import Interview, Task, Submission, TestCase, ProblemSet
+
+current_interviews = caches['current_interviews']
+submission_results = caches['submission_results']
 
 
 class CompanyType(DjangoObjectType):
@@ -101,6 +106,7 @@ class StartInterview(graphene.Mutation):
             task = Task(problem=problem, interview=interview)
             task.save()
 
+        current_interviews.set(user.id, interview.id)
         return StartInterview(id=interview.id)
 
 
