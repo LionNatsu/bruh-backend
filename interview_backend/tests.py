@@ -77,7 +77,7 @@ class EntityTestCase(GraphQLTestCase):
         resp = self.query('''
             mutation {
                 createProblem(title: "Title", text: "<p>hello</p>") {
-                    problem { title } 
+                    problem { title }
                 }
             }
             ''')
@@ -97,8 +97,6 @@ class InterviewTestCase(GraphQLTestCase):
             username='john', password='secret')
         User.objects.create_user(
             username='staff', password='secret', is_staff=True)
-
-    def test_interview(self):
         self._client.login(username='staff', password='secret')
         resp = self.query('''
             mutation {
@@ -109,6 +107,48 @@ class InterviewTestCase(GraphQLTestCase):
             ''')
         self.assertResponseNoErrors(resp)
         self._client.login(username='john', password='secret')
+
+    def test_interview_simple(self):
+        resp = self.query('''
+            mutation {
+                startInterview { id }
+            }
+            ''')
+        self.assertResponseNoErrors(resp)
+        resp = self.query('''
+            mutation {
+                startInterview { id }
+            }
+            ''')
+        self.assertResponseHasErrors(resp)
+        resp = self.query('''
+            {
+                currentInterview { id }
+            }
+            ''')
+        self.assertResponseNoErrors(resp)
+        resp = self.query('''
+            mutation {
+                finishInterview { id }
+            }
+            ''')
+        self.assertResponseNoErrors(resp)
+        resp = self.query('''
+            mutation {
+                finishInterview { id }
+            }
+            ''')
+        self.assertResponseHasErrors(resp)
+        resp = self.query('''
+            {
+                currentInterview { id }
+            }
+            ''')
+        self.assertResponseNoErrors(resp)
+        content = json.loads(resp.content)
+        self.assertDictEqual(content, {'data': {'currentInterview': None}})
+
+    def test_interview_full(self):
         resp = self.query('''
             mutation {
                 startInterview { id }
@@ -117,17 +157,42 @@ class InterviewTestCase(GraphQLTestCase):
         self.assertResponseNoErrors(resp)
         resp = self.query('''
             {
-                currentInterview {
-                    expiredAt
-                    tasks {
-                        title
-                        text
-                        code_template
-                        submission {
-                            state
-                        }
-                    }
+              currentInterview {
+                user {
+                  username
                 }
+                startTime
+                finishedTime
+                expiredTime
+                taskSet {
+                  submissionSet {
+                    code
+                  }
+                  problem {
+                    title
+                    text
+                  }
+                }
+              }
             }
             ''')
+        self.assertResponseNoErrors(resp)
+        resp = self.query('''
+            mutation {
+                finishInterview { id }
+            }
+            ''')
+        self.assertResponseNoErrors(resp)
+        resp = self.query('''
+            {
+                currentInterview { id }
+            }
+            ''')
+        self.assertResponseNoErrors(resp)
+        resp = self.query('''
+            query interview($interview_id: ID!) {
+                interview(id: $interview_id) { id }
+            }
+            ''', variables={'interview_id': 1})
+        print(resp.content)
         self.assertResponseNoErrors(resp)
