@@ -48,7 +48,7 @@ class Task(models.Model):
 class Submission(models.Model):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     language = models.CharField(max_length=32)
-    code = models.BinaryField()
+    code = models.TextField()
 
     class Judgement(models.IntegerChoices):
         AC = 1
@@ -60,4 +60,4 @@ class Submission(models.Model):
     judgement = models.IntegerField(choices=Judgement.choices)
     failed_at = models.ForeignKey('TestCase', null=True,
                                   on_delete=models.SET_NULL)
-    failed_output = models.BinaryField()
+    failed_output = models.TextField()
