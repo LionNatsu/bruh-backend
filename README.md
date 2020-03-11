@@ -1,5 +1,7 @@
 # interview-backend
 
+![Django CI](https://github.com/LionNatsu/interview-backend/workflows/Django%20CI/badge.svg)
+
 An experimental implementation for "mock interview" GraphQL backend
 based on Django.
 
