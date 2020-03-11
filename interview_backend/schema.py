@@ -38,6 +38,16 @@ class InterviewType(DjangoObjectType):
         model = Interview
 
 
+class TaskType(DjangoObjectType):
+    class Meta:
+        model = Task
+
+
+class SubmissionType(DjangoObjectType):
+    class Meta:
+        model = Submission
+
+
 class CreateCompany(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
