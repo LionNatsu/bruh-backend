@@ -70,7 +70,7 @@ an "UNKNOWN" result of certain submission.
 
 ## TODO
 
-- [x] Models and workflow
+- [x] Designing models and workflow
 - [ ] GraphQL schema
     - [x] permission validation & account entry points
     - [x] `currentUser { interviewSet {...} }`
@@ -81,6 +81,7 @@ an "UNKNOWN" result of certain submission.
 - [ ] Task dispatcher (django-celery)
 - [ ] Migrating from SQLite to MySQL
 - [ ] Migrating from LocMem to Redis
+- [x] Deploying CI tests
 
 ## Scriptlets
 
